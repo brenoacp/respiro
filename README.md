@@ -1,4 +1,4 @@
-# Alerta
+# Respiro
 
 App de bandeja do Windows que lembra você de fazer pausas.
 
@@ -24,4 +24,4 @@ dotnet test
 dotnet publish src/Alerta -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
 ```
 
-Configurações: `%APPDATA%\Alerta\settings.json`.
+Gera `publish/Respiro.exe`. Configurações: `%APPDATA%\Respiro\settings.json` (copiadas de `%APPDATA%\Alerta` na primeira execução).

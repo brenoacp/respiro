@@ -10,7 +10,7 @@ internal sealed class SettingsForm : Form
     {
         Result = settings;
 
-        Text = "Alerta — Configurações";
+        Text = "Respiro — Configurações";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         MinimizeBox = false;

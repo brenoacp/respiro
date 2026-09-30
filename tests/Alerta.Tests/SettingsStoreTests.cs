@@ -77,6 +77,29 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void Legacy_settings_are_copied_to_the_new_location()
+    {
+        var legacy = Path.Combine(_dir, "old", "settings.json");
+        SettingsStore.Save(legacy, new Settings { WorkSeconds = 1800 });
+
+        SettingsStore.MigrateLegacy(legacy, PathInDir);
+
+        Assert.Equal(1800, SettingsStore.Load(PathInDir).WorkSeconds);
+    }
+
+    [Fact]
+    public void Legacy_settings_never_overwrite_an_existing_file()
+    {
+        var legacy = Path.Combine(_dir, "old", "settings.json");
+        SettingsStore.Save(legacy, new Settings { WorkSeconds = 1800 });
+        SettingsStore.Save(PathInDir, new Settings { WorkSeconds = 1200 });
+
+        SettingsStore.MigrateLegacy(legacy, PathInDir);
+
+        Assert.Equal(1200, SettingsStore.Load(PathInDir).WorkSeconds);
+    }
+
+    [Fact]
     public void Tips_and_sound_are_on_by_default_and_for_old_files()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(PathInDir)!);

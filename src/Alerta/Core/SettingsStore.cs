@@ -31,6 +31,21 @@ public static class SettingsStore
         return defaults;
     }
 
+    /// <summary>Copies settings from an older app name's folder, unless the new file already exists.</summary>
+    public static void MigrateLegacy(string legacyPath, string path)
+    {
+        try
+        {
+            if (File.Exists(path) || !File.Exists(legacyPath)) return;
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.Copy(legacyPath, path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Start from defaults.
+        }
+    }
+
     public static bool Save(string path, Settings settings)
     {
         try

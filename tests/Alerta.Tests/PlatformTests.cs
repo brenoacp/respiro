@@ -51,10 +51,10 @@ public sealed class PlatformTests : IDisposable
 
         Assert.False(startup.IsEnabled());
 
-        startup.Enable(@"C:\Apps\Alerta.exe");
+        startup.Enable(@"C:\Apps\Respiro.exe");
         Assert.True(startup.IsEnabled());
         using (var key = Registry.CurrentUser.OpenSubKey($@"{_root}\Run"))
-            Assert.Equal("\"C:\\Apps\\Alerta.exe\"", key!.GetValue("Alerta"));
+            Assert.Equal("\"C:\\Apps\\Respiro.exe\"", key!.GetValue("Respiro"));
 
         startup.Disable();
         Assert.False(startup.IsEnabled());
@@ -63,6 +63,29 @@ public sealed class PlatformTests : IDisposable
     [Fact]
     public void Startup_disable_when_never_enabled_does_not_throw() =>
         new StartupRegistration($@"{_root}\Run").Disable();
+
+    [Fact]
+    public void Legacy_autostart_entry_is_replaced_by_the_new_one()
+    {
+        var legacy = new StartupRegistration($@"{_root}\Run", "Alerta");
+        legacy.Enable(@"C:\Apps\Alerta.exe");
+        var current = new StartupRegistration($@"{_root}\Run", "Respiro");
+
+        current.MigrateFrom("Alerta", @"C:\Apps\Respiro.exe");
+
+        Assert.False(legacy.IsEnabled());
+        Assert.True(current.IsEnabled());
+    }
+
+    [Fact]
+    public void Autostart_migration_without_legacy_entry_changes_nothing()
+    {
+        var current = new StartupRegistration($@"{_root}\Run", "Respiro");
+
+        current.MigrateFrom("Alerta", @"C:\Apps\Respiro.exe");
+
+        Assert.False(current.IsEnabled());
+    }
 
     [Fact]
     public void Idle_monitor_reports_a_plausible_value() =>

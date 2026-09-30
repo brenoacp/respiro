@@ -36,8 +36,9 @@ internal sealed class TrayController : ApplicationContext
         _scheduler = new BreakScheduler(_settings, new SystemClock(), new IdleMonitor(), new BusyDetector());
         _presenter = new AlertPresenter(_scheduler, () => _catalog.NextFor(_settings), Refresh);
 
-        _tray = new NotifyIcon { Text = "Alerta", ContextMenuStrip = BuildMenu(), Visible = true };
+        _tray = new NotifyIcon { Text = "Respiro", ContextMenuStrip = BuildMenu(), Visible = true };
         _tray.DoubleClick += (_, _) => OpenSettings();
+        MigrateLegacyStartup();
 
         _timer = new System.Windows.Forms.Timer { Interval = 1000 };
         _timer.Tick += (_, _) => Refresh();
@@ -133,7 +134,7 @@ internal sealed class TrayController : ApplicationContext
         _settings = settings.Normalized();
         _scheduler.ApplySettings(_settings);
         if (!_demo && !SettingsStore.Save(_settingsPath, _settings))
-            _tray.ShowBalloonTip(3000, "Alerta", "Não foi possível salvar as configurações.", ToolTipIcon.Warning);
+            _tray.ShowBalloonTip(3000, "Respiro", "Não foi possível salvar as configurações.", ToolTipIcon.Warning);
         UpdateModeChecks();
         Refresh();
     }
@@ -161,6 +162,19 @@ internal sealed class TrayController : ApplicationContext
         }
     }
 
+    private void MigrateLegacyStartup()
+    {
+        try
+        {
+            _startup.MigrateFrom("Alerta", Environment.ProcessPath!);
+            _startupItem.Checked = _startup.IsEnabled();
+        }
+        catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            // Leave autostart as it was.
+        }
+    }
+
     private void ToggleStartup()
     {
         try
@@ -170,7 +184,7 @@ internal sealed class TrayController : ApplicationContext
         }
         catch (Exception e) when (e is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
-            _tray.ShowBalloonTip(3000, "Alerta", "Não foi possível alterar a inicialização com o Windows.", ToolTipIcon.Warning);
+            _tray.ShowBalloonTip(3000, "Respiro", "Não foi possível alterar a inicialização com o Windows.", ToolTipIcon.Warning);
         }
         _startupItem.Checked = _startup.IsEnabled();
     }
