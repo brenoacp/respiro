@@ -6,7 +6,7 @@ namespace Alerta.UI;
 internal sealed class AlertPresenter : IDisposable
 {
     private readonly BreakScheduler _scheduler;
-    private readonly ExerciseCatalog _catalog;
+    private readonly Func<Exercise> _nextExercise;
     private readonly Action _refresh;
     private readonly List<BackdropForm> _backdrops = [];
     private CardForm? _card;
@@ -14,10 +14,10 @@ internal sealed class AlertPresenter : IDisposable
     private Exercise? _exercise;
     private int _notifySequence;
 
-    public AlertPresenter(BreakScheduler scheduler, ExerciseCatalog catalog, Action refresh)
+    public AlertPresenter(BreakScheduler scheduler, Func<Exercise> nextExercise, Action refresh)
     {
         _scheduler = scheduler;
-        _catalog = catalog;
+        _nextExercise = nextExercise;
         _refresh = refresh;
     }
 
@@ -51,7 +51,7 @@ internal sealed class AlertPresenter : IDisposable
 
     private void Build(AlertView view)
     {
-        var exercise = _exercise ??= _catalog.Next();
+        var exercise = _exercise ??= _nextExercise();
 
         switch (view)
         {

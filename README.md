@@ -6,6 +6,8 @@ App de bandeja do Windows que lembra você de fazer pausas.
 - Modo **Escalonado**: aviso discreto → tela escurecida → bloqueio de 30 s (com "Emergência: pular").
 - Modo **Só notificação**: apenas o aviso, repetido a cada 5 min.
 - Ficar 5 min sem mexer no computador conta como pausa.
+- Dicas de saúde (exercícios) em cada alerta, ou apenas "Faça uma pausa" — opção no menu e nas Configurações.
+- Som curto do Windows a cada aviso, escurecimento e bloqueio (pode desligar).
 - Não interrompe em tela cheia, apresentação ou com o microfone em uso (Teams, Zoom, Meet).
 
 ## Rodar

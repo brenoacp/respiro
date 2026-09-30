@@ -1,3 +1,4 @@
+using System.Media;
 using Alerta.Core;
 using Alerta.Platform;
 
@@ -12,6 +13,8 @@ internal sealed class TrayController : ApplicationContext
     private readonly BreakScheduler _scheduler;
     private readonly AlertPresenter _presenter;
     private readonly StartupRegistration _startup = new();
+    private readonly ExerciseCatalog _catalog = new();
+    private readonly SoundCue _soundCue = new();
     private readonly NotifyIcon _tray;
     private readonly System.Windows.Forms.Timer _timer;
     private Settings _settings;
@@ -19,6 +22,8 @@ internal sealed class TrayController : ApplicationContext
     private ToolStripMenuItem _modeEscalating = null!;
     private ToolStripMenuItem _modeNotify = null!;
     private ToolStripMenuItem _startupItem = null!;
+    private ToolStripMenuItem _tipsItem = null!;
+    private ToolStripMenuItem _soundItem = null!;
     private Icon? _icon;
     private int _iconKey = -1;
     private bool _settingsOpen;
@@ -29,7 +34,7 @@ internal sealed class TrayController : ApplicationContext
         _demo = demo;
         _settings = demo ? Settings.Demo() : SettingsStore.Load(settingsPath);
         _scheduler = new BreakScheduler(_settings, new SystemClock(), new IdleMonitor(), new BusyDetector());
-        _presenter = new AlertPresenter(_scheduler, new ExerciseCatalog(), Refresh);
+        _presenter = new AlertPresenter(_scheduler, () => _catalog.NextFor(_settings), Refresh);
 
         _tray = new NotifyIcon { Text = "Alerta", ContextMenuStrip = BuildMenu(), Visible = true };
         _tray.DoubleClick += (_, _) => OpenSettings();
@@ -45,6 +50,7 @@ internal sealed class TrayController : ApplicationContext
     {
         var snapshot = _scheduler.Tick();
         _presenter.Apply(snapshot);
+        if (_soundCue.ShouldPlay(snapshot, _settings.PlaySound)) SystemSounds.Asterisk.Play();
         UpdateIcon(snapshot);
         var text = (_demo ? "[demo] " : "") + StatusText.For(snapshot);
         _tray.Text = text.Length > 127 ? text[..127] : text;
@@ -93,6 +99,13 @@ internal sealed class TrayController : ApplicationContext
         mode.DropDownItems.Add(_modeNotify);
         menu.Items.Add(mode);
 
+        _tipsItem = new ToolStripMenuItem("Mostrar dicas de saúde", null,
+            (_, _) => ApplySettings(_settings with { ShowHealthTips = !_settings.ShowHealthTips }));
+        _soundItem = new ToolStripMenuItem("Tocar som", null,
+            (_, _) => ApplySettings(_settings with { PlaySound = !_settings.PlaySound }));
+        menu.Items.Add(_tipsItem);
+        menu.Items.Add(_soundItem);
+
         menu.Items.Add("Configurações...", null, (_, _) => OpenSettings());
 
         _startupItem = new ToolStripMenuItem("Iniciar com o Windows", null, (_, _) => ToggleStartup())
@@ -129,6 +142,8 @@ internal sealed class TrayController : ApplicationContext
     {
         _modeEscalating.Checked = _settings.Mode == AlertMode.Escalating;
         _modeNotify.Checked = _settings.Mode == AlertMode.NotifyOnly;
+        _tipsItem.Checked = _settings.ShowHealthTips;
+        _soundItem.Checked = _settings.PlaySound;
     }
 
     private void OpenSettings()

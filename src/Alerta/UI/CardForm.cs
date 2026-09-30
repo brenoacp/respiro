@@ -55,7 +55,13 @@ internal sealed class CardForm : Form
             Font = new Font("Segoe UI Semibold", 14f),
             Margin = new Padding(0, 6, 0, 4),
         };
-        var body = new Label { Text = exercise.Instructions, AutoSize = true, MaximumSize = new Size(340, 0) };
+        var body = new Label
+        {
+            Text = exercise.Instructions,
+            AutoSize = true,
+            MaximumSize = new Size(340, 0),
+            Visible = exercise.Instructions.Length > 0,
+        };
         _countdown = new Label
         {
             AutoSize = true,

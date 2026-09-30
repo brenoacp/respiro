@@ -75,4 +75,26 @@ public sealed class SettingsStoreTests : IDisposable
         Assert.Equal(TimeSpan.FromMinutes(5), s.Break);
         Assert.Equal(TimeSpan.FromSeconds(30), s.Lock);
     }
+
+    [Fact]
+    public void Tips_and_sound_are_on_by_default_and_for_old_files()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(PathInDir)!);
+        File.WriteAllText(PathInDir, """{"WorkSeconds":1800}""");
+
+        var settings = SettingsStore.Load(PathInDir);
+
+        Assert.True(settings.ShowHealthTips);
+        Assert.True(settings.PlaySound);
+    }
+
+    [Fact]
+    public void Tips_and_sound_switched_off_survive_save_and_load()
+    {
+        var original = new Settings { ShowHealthTips = false, PlaySound = false };
+
+        SettingsStore.Save(PathInDir, original);
+
+        Assert.Equal(original, SettingsStore.Load(PathInDir));
+    }
 }

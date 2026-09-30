@@ -27,6 +27,9 @@ internal sealed class SettingsForm : Form
         var stage2 = AddRow(grid, "Escurecer a tela após (min)", settings.Stage2AfterSeconds / 60, 1, 60);
         var stage3 = AddRow(grid, "Bloquear após mais (min)", settings.Stage3AfterSeconds / 60, 1, 60);
 
+        var tips = AddCheck(grid, "Mostrar dicas de saúde", settings.ShowHealthTips);
+        var sound = AddCheck(grid, "Tocar som", settings.PlaySound);
+
         var ok = new Button { Text = "Salvar", DialogResult = DialogResult.OK, AutoSize = true };
         var cancel = new Button { Text = "Cancelar", DialogResult = DialogResult.Cancel, AutoSize = true };
         var buttons = new FlowLayoutPanel
@@ -50,9 +53,19 @@ internal sealed class SettingsForm : Form
             IdleResetSeconds = (int)idle.Value * 60,
             Stage2AfterSeconds = (int)stage2.Value * 60,
             Stage3AfterSeconds = (int)stage3.Value * 60,
+            ShowHealthTips = tips.Checked,
+            PlaySound = sound.Checked,
         }).Normalized();
 
         Controls.Add(grid);
+    }
+
+    private static CheckBox AddCheck(TableLayoutPanel grid, string label, bool value)
+    {
+        var box = new CheckBox { Text = label, Checked = value, AutoSize = true, Margin = new Padding(0, 6, 0, 6) };
+        grid.Controls.Add(box);
+        grid.SetColumnSpan(box, 2);
+        return box;
     }
 
     private static NumericUpDown AddRow(TableLayoutPanel grid, string label, int value, int min, int max)

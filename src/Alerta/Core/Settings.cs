@@ -15,6 +15,8 @@ public sealed record Settings
     public int NotifyRepeatSeconds { get; init; } = 5 * 60;
     public int BusyRecheckSeconds { get; init; } = 60;
     public AlertMode Mode { get; init; } = AlertMode.Escalating;
+    public bool ShowHealthTips { get; init; } = true;
+    public bool PlaySound { get; init; } = true;
 
     [JsonIgnore] public TimeSpan Work => TimeSpan.FromSeconds(WorkSeconds);
     [JsonIgnore] public TimeSpan Break => TimeSpan.FromSeconds(BreakSeconds);

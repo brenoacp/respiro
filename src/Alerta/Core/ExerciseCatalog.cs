@@ -1,6 +1,10 @@
 namespace Alerta.Core;
 
-public sealed record Exercise(string Title, string Instructions);
+public sealed record Exercise(string Title, string Instructions)
+{
+    /// <summary>Card shown when health tips are switched off.</summary>
+    public static Exercise PauseOnly { get; } = new("Faça uma pausa", "");
+}
 
 public sealed class ExerciseCatalog
 {
@@ -26,6 +30,8 @@ public sealed class ExerciseCatalog
         if (_items.Count == 0) throw new ArgumentException("Catalog needs at least one exercise.", nameof(items));
         _random = random ?? Random.Shared;
     }
+
+    public Exercise NextFor(Settings settings) => settings.ShowHealthTips ? Next() : Exercise.PauseOnly;
 
     public Exercise Next()
     {

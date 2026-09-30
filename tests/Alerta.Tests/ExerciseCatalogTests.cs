@@ -44,4 +44,23 @@ public class ExerciseCatalogTests
     {
         Assert.Throws<ArgumentException>(() => new ExerciseCatalog([]));
     }
+
+    [Fact]
+    public void Without_tips_the_card_just_says_take_a_break()
+    {
+        var catalog = new ExerciseCatalog();
+
+        var card = catalog.NextFor(new Settings { ShowHealthTips = false });
+
+        Assert.Equal("Faça uma pausa", card.Title);
+        Assert.Equal("", card.Instructions);
+    }
+
+    [Fact]
+    public void With_tips_the_card_comes_from_the_catalog()
+    {
+        var catalog = new ExerciseCatalog();
+
+        Assert.Contains(catalog.NextFor(new Settings { ShowHealthTips = true }), ExerciseCatalog.Default);
+    }
 }
