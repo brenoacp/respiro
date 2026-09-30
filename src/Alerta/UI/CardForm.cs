@@ -10,6 +10,7 @@ internal sealed record CardButton(string Text, Action OnClick, bool Primary = fa
 internal sealed class CardForm : Form
 {
     private const int WS_EX_TOOLWINDOW = 0x80;
+    private const int WS_EX_NOACTIVATE = 0x08000000;
 
     private readonly CardPlacement _placement;
     private readonly Label _countdown;
@@ -92,14 +93,15 @@ internal sealed class CardForm : Form
         Controls.Add(layout);
     }
 
-    protected override bool ShowWithoutActivation => _placement == CardPlacement.BottomRight;
+    // Never take focus: keystrokes meant for another app must not press a card button.
+    protected override bool ShowWithoutActivation => true;
 
     protected override CreateParams CreateParams
     {
         get
         {
             var cp = base.CreateParams;
-            cp.ExStyle |= WS_EX_TOOLWINDOW; // keep out of Alt+Tab
+            cp.ExStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE; // keep out of Alt+Tab, never steal focus
             return cp;
         }
     }

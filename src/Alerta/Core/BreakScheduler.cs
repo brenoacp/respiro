@@ -33,7 +33,11 @@ public sealed class BreakScheduler
     {
         var now = _clock.Now;
         var delta = now - _lastTick;
-        if (delta < TimeSpan.Zero) delta = TimeSpan.Zero;
+        if (delta < TimeSpan.Zero)
+        {
+            ShiftDeadlines(delta);
+            delta = TimeSpan.Zero;
+        }
         _lastTick = now;
 
         switch (_phase)
@@ -92,7 +96,9 @@ public sealed class BreakScheduler
     /// <summary>Working: pushes the break back by <paramref name="by"/>. Otherwise: next break in <paramref name="by"/>.</summary>
     public void Snooze(TimeSpan by)
     {
-        _worked = _phase == Phase.Working ? _worked - by : _settings.Work - by;
+        _worked = _phase == Phase.Working
+            ? (_worked < _settings.Work ? _worked : _settings.Work) - by
+            : _settings.Work - by;
         _phase = Phase.Working;
     }
 
@@ -120,6 +126,18 @@ public sealed class BreakScheduler
             _nextBusyCheck = now + _settings.BusyRecheck;
         }
         return _lastBusy;
+    }
+
+    /// <summary>The wall clock moved backwards: keep running countdowns relative to real elapsed time.</summary>
+    private void ShiftDeadlines(TimeSpan by)
+    {
+        if (_phase == Phase.Due)
+        {
+            _dueSince += by;
+            _nextNotifyAt += by;
+        }
+        if (_phase == Phase.OnBreak) _breakEndsAt += by;
+        _nextBusyCheck = DateTime.MinValue;
     }
 
     private void EnterDue(DateTime now)

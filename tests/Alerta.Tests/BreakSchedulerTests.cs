@@ -305,4 +305,38 @@ public class BreakSchedulerTests
 
         Assert.Equal(Phase.Due, s.Tick().Phase);
     }
+    [Fact]
+    public void Clock_jumping_back_during_lock_does_not_extend_it()
+    {
+        var s = Create();
+        Run(s, 100);
+        _clock.Advance(TimeSpan.FromHours(-1));
+
+        Assert.Equal(3, s.Tick().Stage);
+        Assert.Equal(Phase.Working, Run(s, 10).Phase);
+    }
+
+    [Fact]
+    public void Clock_jumping_back_during_break_does_not_extend_it()
+    {
+        var s = Create();
+        Run(s, 60);
+        s.StartBreak();
+        Run(s, 10);
+        _clock.Advance(TimeSpan.FromHours(-1));
+
+        Assert.Equal(TimeSpan.FromSeconds(20), s.Tick().BreakRemaining);
+        Assert.Equal(Phase.Working, Run(s, 20).Phase);
+    }
+
+    [Fact]
+    public void Snooze_after_long_busy_deferral_postpones_from_now()
+    {
+        _busy.Busy = true;
+        var s = Create();
+        Run(s, 200);
+        s.Snooze(TimeSpan.FromSeconds(15));
+
+        Assert.Equal(TimeSpan.FromSeconds(15), s.Tick().UntilBreak);
+    }
 }

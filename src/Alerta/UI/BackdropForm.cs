@@ -4,10 +4,13 @@ namespace Alerta.UI;
 internal sealed class BackdropForm : Form
 {
     private const int WS_EX_TOOLWINDOW = 0x80;
+    private const int WS_EX_NOACTIVATE = 0x08000000;
+    private readonly Screen _screen;
     private bool _allowClose;
 
     public BackdropForm(Screen screen, double opacity)
     {
+        _screen = screen;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         TopMost = true;
@@ -24,9 +27,23 @@ internal sealed class BackdropForm : Form
         get
         {
             var cp = base.CreateParams;
-            cp.ExStyle |= WS_EX_TOOLWINDOW;
+            // No activation: a click on the backdrop must not make our window the "full-screen app".
+            cp.ExStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
             return cp;
         }
+    }
+
+    // With per-monitor DPI, WinForms rescales the window when it lands on a monitor with another DPI.
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        Bounds = _screen.Bounds;
+    }
+
+    protected override void OnDpiChanged(DpiChangedEventArgs e)
+    {
+        base.OnDpiChanged(e);
+        Bounds = _screen.Bounds;
     }
 
     public void ForceClose()

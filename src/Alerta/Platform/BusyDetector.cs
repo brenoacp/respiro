@@ -18,6 +18,16 @@ internal sealed class BusyDetector : IBusySource
     [DllImport("shell32.dll")]
     private static extern int SHQueryUserNotificationState(out int state);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+    /// <summary>Our own full-screen overlay must not make us look busy.</summary>
+    internal static bool IsFullScreenBusy(int state, bool foregroundIsOurs) =>
+        !foregroundIsOurs && (state is QUNS_BUSY or QUNS_RUNNING_D3D_FULL_SCREEN or QUNS_PRESENTATION_MODE);
+
     private readonly string _micKeyPath;
 
     public BusyDetector(string micKeyPath = MicrophoneKeyPath) => _micKeyPath = micKeyPath;
@@ -29,12 +39,18 @@ internal sealed class BusyDetector : IBusySource
         try
         {
             return SHQueryUserNotificationState(out var state) == 0
-                && (state is QUNS_BUSY or QUNS_RUNNING_D3D_FULL_SCREEN or QUNS_PRESENTATION_MODE);
+                && IsFullScreenBusy(state, ForegroundIsOurs());
         }
         catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
         {
             return false;
         }
+    }
+
+    private static bool ForegroundIsOurs()
+    {
+        GetWindowThreadProcessId(GetForegroundWindow(), out var pid);
+        return pid == (uint)Environment.ProcessId;
     }
 
     /// <summary>
