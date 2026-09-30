@@ -27,6 +27,14 @@ Um pequeno anel ao lado do relógio vai se enchendo enquanto você trabalha e mu
 
 ## Instalação
 
+### Download
+
+Baixe o `Respiro.exe` da [última release](https://github.com/brenoacp/respiro/releases/latest) e execute. Precisa do [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) — se não estiver instalado, o Windows mostra um link para baixá-lo na primeira execução.
+
+> O executável não é assinado digitalmente, então o Windows SmartScreen pode avisar "O Windows protegeu o computador". Clique em **Mais informações → Executar assim mesmo**.
+
+### Compilar do código-fonte
+
 ```bash
 git clone https://github.com/brenoacp/respiro.git
 cd respiro
@@ -101,3 +109,7 @@ docs/superpowers/   especificação e plano de implementação
 ```
 
 O `BreakScheduler` não conhece a interface: recebe relógio, ociosidade e "ocupado" por interfaces e devolve um snapshot imutável a cada tick de 1 s. A UI só desenha esse snapshot — por isso quase toda a lógica é coberta por testes sem abrir janelas.
+
+## Licença
+
+[MIT](LICENSE)
